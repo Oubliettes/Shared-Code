@@ -1,0 +1,26 @@
+#!pip install --upgrade pip
+!pip install git+https://github.com/deepset-ai/haystack.git
+from haystack.utils import print_answers, convert_files_to_docs, clean_wiki_text, fetch_archive_from_http 
+from haystack.nodes import FARMReader, TransformersReader
+from haystack.document_stores import InMemoryDocumentStore
+document_store = InMemoryDocumentStore()
+
+storage = "extraction/GoT"
+storage_http = "https://s3.eu-central-1.amazonaws.com/deepset.ai-farm-qa/datasets/documents/wiki_gameofthrones_txt3.zip"
+fetch_archive_from_http(url=storage_http, output_dir=storage)
+files = convert_files_to_docs(dir_path=storage, clean_func=clean_wiki_text, split_paragraphs=True)
+document_store.write_documents(files)
+
+from haystack.nodes import TfidfRetriever
+extractor = TfidfRetriever(document_store=document_store)
+insights = FARMReader(model_name_or_path="deepset/roberta-large-squad2", use_gpu=True)
+
+from haystack.pipelines import ExtractiveQAPipeline
+pipe = ExtractiveQAPipeline(insights, extractor)
+
+prediction = pipe.run(
+    query="Who is Sansa's sister?", params={"Retriever": {"top_k": 50}, "Reader": {"top_k": 3}})
+
+from pprint import pprint
+pprint(prediction)
+print_answers(prediction, details="minimum")
