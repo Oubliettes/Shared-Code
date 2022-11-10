@@ -1,0 +1,42 @@
+#Put it all together
+
+#install the library and import it
+!pip install opencv-python
+import cv2
+
+#import an image
+image=cv2.imread(r"/Users/aniltilbe/Jupyter Notebooks/Training/Medium/CVATPart3.jpeg",1) 
+
+#review the image
+cv2.imshow("CVATPart3",image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+#Import Haar Cascades
+detection_xml = cv2.CascadeClassifier(r"/Users/aniltilbe/Jupyter Notebooks/Training/Medium/haarcascade_frontalface_default.xml")
+
+#convert image to gray scale
+gray = cv2.cvtColor(image, 0)
+
+#activate face detection
+facedetection = detection_xml.detectMultiScale(gray, 1.5, 4)
+
+#draw the box and analyze the face detection results
+for (x,y,w,h) in facedetection:
+    image = cv2.rectangle(image,(x,y),(x+w,y+h),(0,255,0),2) 
+    cv2.imshow("image",image)
+    cv2.waitKey(0)
+
+'''
+Extra basics:
+
+#analyze the shape
+print(image.shape)
+
+#analyze the size
+print(image.size)
+
+#analyze the type
+print(image.dtype)
+'''
+
